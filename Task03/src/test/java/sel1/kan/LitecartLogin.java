@@ -1,8 +1,15 @@
 package sel1.kan;
 
+import java.util.Arrays;
+import java.util.Collection;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameter;
+import org.junit.runners.Parameterized.Parameters;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
@@ -15,12 +22,12 @@ import com.google.common.base.Predicate;
 /**
  * Litecart login scenario.
  */
+@RunWith(Parameterized.class)
 public class LitecartLogin {
     /**
      * Timeout in seconds.
      */
     private static final long   TIMEOUT_SEC = 30L;
-
     /**
      * Sleep time in milliseconds.
      */
@@ -32,6 +39,18 @@ public class LitecartLogin {
     private static final String URL         = "http://localhost/litecart/admin/";
 
     /**
+     * Username.
+     */
+    @Parameter(0)
+    public String               username;
+
+    /**
+     * Password.
+     */
+    @Parameter(1)
+    public String               password;
+
+    /**
      * {@link WebDriver} instance.
      */
     private WebDriver           driver;
@@ -40,6 +59,16 @@ public class LitecartLogin {
      * {@link WebDriverWait} instance.
      */
     private WebDriverWait       wait;
+
+    /**
+     * Returns test data.
+     *
+     * @return test data
+     */
+    @Parameters
+    public static Collection<Object[]> data() {
+        return Arrays.asList(new Object[][] { { "admin", "admin" } });
+    }
 
     /**
      * After test actions.
@@ -65,13 +94,14 @@ public class LitecartLogin {
     @Test
     public void runTest() {
         this.driver.get(LitecartLogin.URL);
-        this.type(By.name("username"), "admin");
-        this.type(By.name("password"), "admin");
+        this.type(By.name("username"), this.username);
+        this.type(By.name("password"), this.password);
         By loginBy = By.name("login");
         this.driver.findElement(loginBy).click();
         this.waitForAjax();
         By logoutBy = By.xpath("//a[@title='Logout']");
-        this.wait.until(ExpectedConditions.presenceOfElementLocated(logoutBy));
+        this.wait
+                .until(ExpectedConditions.visibilityOfElementLocated(logoutBy));
         this.driver.findElement(logoutBy).click();
         this.waitForAjax();
         this.wait.until(ExpectedConditions.visibilityOfElementLocated(loginBy));
