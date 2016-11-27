@@ -8,6 +8,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
@@ -23,22 +24,27 @@ public class AdminPanelChecker {
     /**
      * Start url.
      */
-    private static final String START_URL          = "http://localhost/litecart/admin";
+    private static final String START_URL              = "http://localhost/litecart/admin";
 
     /**
      * Menu item template.
      */
-    private static final String MENU_ITEM_TEMPLATE = "ul#box-apps-menu li:nth-child({0})";
+    private static final String MENU_ITEM_TEMPLATE     = "ul#box-apps-menu li:nth-child({0})";
+
+    /**
+     * Sub menu item template.
+     */
+    private static final String SUB_MENU_ITEM_TEMPLATE = "li:nth-child({0})";
 
     /**
      * Header locator.
      */
-    private static final String HEADER_LOCATOR     = "td#content h1";
+    private static final String HEADER_LOCATOR         = "td#content h1";
 
     /**
      * Object responsible for {@link WebDriver} creation.
      */
-    private final IWDCreator    creator            = new ChromeCreator();
+    private final IWDCreator    creator                = new ChromeCreator();
 
     /**
      * {@link WebDriver} instance.
@@ -80,17 +86,37 @@ public class AdminPanelChecker {
     public void runTest() {
         this.driver.get(AdminPanelChecker.START_URL);
         this.login("admin", "admin");
-        int index = 1;
-        boolean bContinue = true;
-        while (bContinue) {
+        int mainIndex = 1;
+        boolean bMainMenuItemPresent = true;
+        while (bMainMenuItemPresent) {
+            // Searching main menu items by index, until none found.
             By itemBy = By.cssSelector(MessageFormat
-                    .format(AdminPanelChecker.MENU_ITEM_TEMPLATE, index++));
-            bContinue = this.actions.findElemens(itemBy);
+                    .format(AdminPanelChecker.MENU_ITEM_TEMPLATE, mainIndex++));
+            bMainMenuItemPresent = this.actions.findElemens(itemBy);
 
-            if (bContinue) {
+            if (bMainMenuItemPresent) {
+                // Click on main menu item.
                 this.actions.clickAndWait(itemBy);
-                Assert.assertTrue("Header not found!", this.actions.findElemens(
-                        By.cssSelector(AdminPanelChecker.HEADER_LOCATOR)));
+                boolean bSubMenuItemPresent = true;
+                int subIndex = 1;
+
+                while (bSubMenuItemPresent) {
+                    // Searching for sub menu items, if any.
+                    By subMenuItem = By.cssSelector(MessageFormat.format(
+                            AdminPanelChecker.SUB_MENU_ITEM_TEMPLATE,
+                            subIndex++));
+                    WebElement mainMenuItem = this.actions.findElement(itemBy);
+                    bSubMenuItemPresent = this.actions.findSubElement(mainMenuItem,
+                            subMenuItem);
+
+                    if (bSubMenuItemPresent) {
+                        // if found - click on it and verify presence of header.
+                        mainMenuItem.findElement(subMenuItem).click();
+                        Assert.assertTrue("Header not found!",
+                                this.actions.findElemens(By.cssSelector(
+                                        AdminPanelChecker.HEADER_LOCATOR)));
+                    }
+                }
             }
         }
     }
