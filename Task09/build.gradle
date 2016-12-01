@@ -1,0 +1,37 @@
+group 'sel1.kan'
+version '1.0-SNAPSHOT'
+
+// Apply the java plugin to add support for Java
+apply plugin: 'java'
+
+sourceCompatibility = 1.8
+
+// In this section you declare where to find the dependencies of your project
+repositories {
+    mavenCentral()
+}
+
+// In this section you declare the dependencies for your production and test code
+dependencies {
+    // The production code uses the SLF4J logging API at compile time
+    compile 'org.slf4j:slf4j-api:1.7.21'
+    compile 'org.slf4j:slf4j-simple:1.7.21'
+    compile group: 'org.seleniumhq.selenium', name: 'selenium-java', version: '3.0.1'
+    testCompile 'junit:junit:4.12'
+    testCompile group: 'org.assertj', name: 'assertj-core', version: '3.5.2'
+}
+
+test {
+    testLogging.showStandardStreams = true
+    
+    include 'sel1/kan/testcase/**'
+    
+    afterSuite { desc, result ->
+        if (!desc.parent) { // will match the outermost suite
+            def output = "Results: ${result.resultType} (${result.testCount} tests, ${result.successfulTestCount} successes, ${result.failedTestCount} failures, ${result.skippedTestCount} skipped)"
+            def startItem = '|  ', endItem = '  |'
+            def repeatLength = startItem.length() + output.length() + endItem.length()
+            println('\n' + ('-' * repeatLength) + '\n' + startItem + output + endItem + '\n' + ('-' * repeatLength))
+        }
+    }
+}

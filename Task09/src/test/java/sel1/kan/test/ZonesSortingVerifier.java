@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
+import org.assertj.core.api.SoftAssertions;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -68,17 +69,29 @@ public class ZonesSortingVerifier {
         actions.getWebDriverWait().until(
                 ExpectedConditions.visibilityOfElementLocated(countryBy));
         actions.clickAndWait(countryBy);
+        ZonesSortingVerifier.log.info("Waiting for zones table to fully load");
         actions.getWebDriverWait()
                 .until(ExpectedConditions.visibilityOfAllElementsLocatedBy(
                         By.cssSelector(ZonesSortingVerifier.DATA_TABLE_ROWS)));
         List<WebElement> rows = actions.getWebDriver().findElements(
                 By.cssSelector(ZonesSortingVerifier.DATA_TABLE_ROWS));
         int last = rows.size() - 1;
+        String prev = "";
+        SoftAssertions soft = new SoftAssertions();
 
         for (int i = 1; i < last; i++) {
-
+            WebElement row = rows.get(i);
+            String next = row.findElement(By.cssSelector("td:nth-child(3)"))
+                    .getText();
+            ZonesSortingVerifier.log.info("Verifying order of " + next);
+            soft.assertThat(next.compareTo(prev))
+                    .withFailMessage("'%s' should be before '%s'", prev, next)
+                    .isGreaterThanOrEqualTo(0);
+            prev = next;
         }
 
+        ZonesSortingVerifier.log.info("Go back to countries list");
         actions.getWebDriver().navigate().back();
+        soft.assertAll();
     }
 }
