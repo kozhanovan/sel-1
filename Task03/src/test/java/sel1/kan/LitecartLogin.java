@@ -14,6 +14,7 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.firefox.FirefoxDriver;
+import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
@@ -83,7 +84,9 @@ public class LitecartLogin {
      */
     @Before
     public void beforeTest() {
-        this.driver = new FirefoxDriver();
+        DesiredCapabilities caps = DesiredCapabilities.firefox();
+        caps.setCapability(FirefoxDriver.MARIONETTE, false);
+        this.driver = new FirefoxDriver(caps);
         this.wait = new WebDriverWait(this.driver, LitecartLogin.TIMEOUT_SEC,
                 LitecartLogin.SLEEP_MS);
     }
